@@ -1,0 +1,27 @@
+---
+title: "Case_Study_1"
+author: "Team Project - Babatunde John Olanipekun, Yvan Sojdehei and Mingyang Nick YU"
+date: "9/30/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Beer and Breweries Exploration
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
