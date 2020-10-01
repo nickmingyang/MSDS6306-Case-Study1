@@ -54,10 +54,11 @@ Beers = Beers %>% rename(Brew_ID= Brewery_id)
 Beers.with.Breweries = left_join(Beers,Breweries, by = "Brew_ID")
 ```
 
+
 ### Address the missing values in each column
 - There are 62 missing values on ABV column, and there are 1005 missing values on IBU column
-- Since 1005/2410 is too big of a percentage of missing value for column IBU, I decided to use Predictive mean matching method to fill the missing data
-- After generating and filling in the missing data, through density plot below, we can see the generated filled in value matches the original density plot. Thus minimize any bias from the researcher.
+- Since 1005/2410 is too big of a percentage of missing value for column IBU, I decided to use Predictive mean matching method(widely used statistical imputation method for missing values, first proposed by Donald B. Rubin in 1986 and R. J. A. Little in 1988) to fill the missing data.
+- After generating and filling in the missing data, through density plot below, we can see the generated filled in value matches the original density plot. Thus minimize any bias from the researcher of arbitrarily filling in value or overeasily using the overall mean for all missing value
 ```{r}
 Beers.with.Breweries = Beers.with.Breweries %>% rename(Beer_Name= Name.x)
 Beers.with.Breweries = Beers.with.Breweries %>% rename(Brew_Name= Name.y)
@@ -69,12 +70,60 @@ md.pattern(Beers.with.Breweries)
 tempData <- mice(Beers.with.Breweries,m=5,maxit=50,meth='pmm',seed=20)
 summary(tempData)
 completedData <- complete(tempData,1)
-head(completedData,100)
+head(completedData)
 # Density plot original vs imputed dataset
 densityplot(tempData)
 #Note: idea used above to impute data is from link below:
 #https://datascienceplus.com/imputing-missing-data-with-r-mice-package/
 ```
+### Compute the median alcohol content and international bitterness unit for each state. Plot a bar chart to compare
+- First plotted Median alcohol content by state, one with modified data set, and the other one with non-modified data set
+- Then plotted Median international bitterness unit for each state, both on the modified data set and non-modified
+- We can see between the modified data and non-modified data provides very different answers. If possible, going back to try to complete the missing data will make the graphics more accurate. But this is a random estimate of the actual value
+```{r}
+#Compute and display Median of ABV and IBU by state:
+median = completedData %>% group_by(State) %>%
+  summarize(median_ABV=median(ABV),median_IBU=median(IBU))
+median
+#Draw Bar Charts to compare
+#First plot median of alcohol content using modified data
+median %>% ggplot()+
+  geom_bar(mapping=aes(x=reorder(State,-median_ABV),y=median_ABV,fill=State),stat="identity") +
+  ggtitle("Median Alcohol content by State on modified dataset")+xlab("State")+ylab("Alcohol Content Percentage")
+#Below is result of using complete data set with missing data to plot median of alcohol content
+Beers.with.Breweries %>% group_by(State) %>%
+  summarize(median_ABV=median(ABV),median_IBU=median(IBU))%>% ggplot()+
+  geom_bar(mapping=aes(x=reorder(State,-median_ABV),y=median_ABV,fill=State),stat="identity")+
+  ggtitle("Median Alcohol content by State on non-Modified dataset")+xlab("State")+ylab("Alcohol Content Percentage")
+#Below is result of plotting median international bitterness unit for each state on modified data set
+median %>% ggplot()+
+  geom_bar(mapping=aes(x=reorder(State,-median_IBU),y=median_IBU,fill=State),stat="identity") +
+  ggtitle("Median International Bitterness Unit by State on modified dataset")+xlab("State")+ylab("International Bitterness Unit")
+#Below is result of using complete data set with missing data to plot median of alcohol content
+Beers.with.Breweries %>% group_by(State) %>%
+  summarize(median_ABV=median(ABV),median_IBU=median(IBU))%>% ggplot()+
+  geom_bar(mapping=aes(x=reorder(State,-median_IBU),y=median_IBU,fill=State),stat="identity") +
+  ggtitle("Median International Bitterness Unit by State on non-modified dataset")+xlab("State")+ylab("International Bitterness Unit")
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
