@@ -19,11 +19,11 @@ Doing intial inspection of data through various methods below.
 Beers = read.csv("/Users/mingyang/Desktop/SMU/DoingDS_Fall2020/MSDS6306-Case-Study1/Beers.csv",header = TRUE) #loading beers dataset
 Breweries = read.csv("/Users/mingyang/Desktop/SMU/DoingDS_Fall2020/MSDS6306-Case-Study1/Breweries.csv",header = TRUE) #loading breweries dataset
 #below this line is for self analyzation
-summary(Beers)
-str(Beers)
-Beers$IBU
-summary(Breweries)
-str(Breweries)
+#summary(Beers)
+#str(Beers)
+##Beers$IBU
+#summary(Breweries)
+#str(Breweries)
 #Above this line is for self analyzing can be deleted later
 #Turn Breweries State column into a factor
 Breweries$State = as.factor(Breweries$State)
@@ -68,9 +68,9 @@ md.pattern(Beers.with.Breweries)
 # Since there is large amont of data missing in IBM column 
 #Try to impute the missing data with Predictive mean Matching method
 tempData <- mice(Beers.with.Breweries,m=5,maxit=50,meth='pmm',seed=20)
-summary(tempData)
+#summary(tempData)
 completedData <- complete(tempData,1)
-head(completedData)
+#head(completedData)
 # Density plot original vs imputed dataset
 densityplot(tempData)
 #Note: idea used above to impute data is from link below:
@@ -106,9 +106,63 @@ Beers.with.Breweries %>% group_by(State) %>%
   ggtitle("Median International Bitterness Unit by State on non-modified dataset")+xlab("State")+ylab("International Bitterness Unit")
 
 ```
+### Which state has the maximum alcoholic (ABV) beer? Which state has the most bitter (IBU) beer?
+As we can see below, Colorado 'CO' has the maximum alcoholic(ABV) beer, it is (0.128)
+- This above result remain unchanged with the original data set
+As we can see, Oregon and Michigan have the most bitter beer
+- Only Oregon has the most bitter beer in the unchanged data set. It means the Michigan bee bitterness value was imputed
+```{r}
+# Discover which state has the maximum alcoholic beer
+head(completedData %>%
+  arrange(desc(ABV)) %>% 
+  select(State,ABV,Beer_Name))
+# Discover with un-changed data set
+head(Beers.with.Breweries %>%
+  arrange(desc(ABV)) %>% 
+  select(State,ABV,Beer_Name))
 
+# Discover which state has the most bitter (IBU) beer
+head(completedData %>%
+  arrange(desc(IBU)) %>% 
+  select(State,IBU,Beer_Name))
 
+# Discover with un-changed data set
+head(Beers.with.Breweries %>%
+  arrange(desc(IBU)) %>% 
+  select(State,IBU,Beer_Name))
+  
+```
 
+### Comment on the summary statistics and distribution of the ABV variable.
+For the adjusted data set, we have
+- Minimum ABV value: 0.001 (minimum value of the group, CEO and CFO might be interested)
+- First quartile ABV: 0.05
+- Median of ABV: 0.056 (center among the entire group, CEO and CFO might be interested)
+- Mean of ABV: 0.05975 (Average of the entire group, CEO and CFO might be interested)
+- Third Quartile ABV: 0.067
+- Maximum ABV: 0.128 (maximum value of the group, CEO and CFO might be interested)
+Comparing the adjusted Data and Unadjusted data, Statistics doesn't change much at all since it is imputed by Predictive mean matching method
+```{r}
+# Summary of adjusted Data
+summary(completedData)
+# Summary of unadjusted Data
+summary(Beers.with.Breweries)
+```
+### Is there an apparent relationship between the bitterness of the beer and its alcoholic content?
+We can see from the scatter plot, there seem to be some sort of relationship between the two
+- As ABV value increases, IBU seem to also increase
+This relationship seem to persist when we compare to the unmodified data
+```{r}
+#first explore modified data
+completedData %>% select(ABV, IBU, State) %>%
+  ggplot(aes(x=ABV,y=IBU)) +
+  geom_point(position="jitter") +ggtitle("IBU vs. ABV -- modified data")
+#next explore unmodified data
+Beers.with.Breweries %>% select(ABV, IBU, State) %>%
+  ggplot(aes(x=ABV,y=IBU)) +
+  geom_point(position="jitter") +ggtitle("IBU vs. ABV -- unmodified data")
+  
+```
 
 
 
