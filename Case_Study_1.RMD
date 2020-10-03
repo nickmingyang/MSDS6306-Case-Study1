@@ -107,6 +107,7 @@ Beers.with.Breweries %>% group_by(State) %>%
   ggtitle("Median International Bitterness Unit by State on non-modified dataset")+xlab("State")+ylab("International Bitterness Unit")
 
 ```
+
 ### Exploring which state has the maximum alcoholic (ABV) beer and which state has the most bitter (IBU) beer
 - As we can see below, Colorado 'CO' has the maximum alcoholic(ABV) beer, it is (0.128)
 - This above result remain unchanged with the original data set
