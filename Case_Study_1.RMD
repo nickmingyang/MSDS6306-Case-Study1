@@ -2,6 +2,7 @@
 title: "Case_Study_1"
 author: "Team Project - Babatunde John Olanipekun, Yvan Sojdehei and Mingyang Nick YU"
 date: "9/30/2020"
+purpose: "This is a team case study aiming at exploring/analyzing dataset (Beers.csv and Breweries.csv) provided by CEO and CFO of Budweiser, answer specific questions and beyond"
 output: html_document
 ---
 
