@@ -71,6 +71,7 @@ md.pattern(Beers.with.Breweries)
 #Try to impute the missing data with Predictive mean Matching method
 tempData <- mice(Beers.with.Breweries,m=5,maxit=50,meth='pmm',seed=20)
 #summary(tempData)
+# completed dataset after adding in generated predictive values
 completedData <- complete(tempData,1)
 #head(completedData)
 # Density plot original vs imputed dataset
@@ -146,7 +147,6 @@ head(Beers.with.Breweries %>%
 - Maximum ABV: 0.128 (maximum value of the group, CEO and CFO might be interested)
 - **Comparing the adjusted Data and Unadjusted data, Statistics doesn't change much at all since it is imputed by Predictive mean matching method**
 
-- 
 ```{r}
 # Summary of adjusted Data
 summary(completedData)
