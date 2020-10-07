@@ -352,7 +352,36 @@ MeanSen
 MeanSpec
 ```
 
+### Further exploration -- Free Style 
+- Explore Types of Ales produced in each city (Which cities contribute to most varieties of Ales?)
+- Explore average ABV content produced by state (Which states produces higher average ABV content, which states lower?)
+```{r}
+#import map library
+library(maps)
+library(plotly)
+# Import US Cities location data
+uscities <- read.csv("/Users/mingyang/Desktop/SMU/DoingDS_Fall2020/MSDS6306-Case-Study1/uscities.csv",header = TRUE)
+uscities = uscities%>%rename(City = city) 
+uscities = uscities%>% group_by(City) %>% filter(row_number()==1)
+# Getting all Ales Beer available
+allAles2 = completedData %>% filter(str_detect(completedData$Beer_Name,regex("Ale",ignore.case=TRUE)))
+dataWithMap = left_join(allAles2,uscities, by = "City")
+str(dataWithMap)
+#dataWithMap %>% filter((is.na(lng))|(is.na(lat))) %>% select(Brew_Name,City)
+dataWithMap2 = dataWithMap %>% select(Beer_Name,City,lat,lng,state_name)
+head(dataWithMap2,100)
+dataWithMap3 = dataWithMap2 %>% group_by(City) %>% mutate(count = n())
+dataWithMap3 = dataWithMap3 %>% group_by(City)%>%filter(row_number()==1)%>%
+  filter((!is.na(lng))&(!is.na(lat)))
+states <- map_data("state")
+p <- ggplot() + 
+  geom_polygon(data = states, aes(x = long, y = lat, group = group), fill = "yellow", color = "black") + 
+  coord_quickmap()
 
+p <-p + geom_point(data = dataWithMap3, aes(x = lng, y = lat, size=count,alpha=count),color="blue")+
+  ggtitle("What cities produce many kinds of Ales") + xlab("Longitude")+ylab("Latitute")
+ggplotly(p)
+```
 
 
 
