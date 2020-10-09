@@ -9,6 +9,9 @@ output: html_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
+```{r global-options, include=FALSE}
+knitr::opts_chunk$set(warning=FALSE)
+```
 
 ## Beer and Breweries Exploration
 Introduction: This is an exploratory data analysis for the data set between Beers.csv and Breweries.csv for CEO and CFO of Budweiser
@@ -26,6 +29,8 @@ Breweries = read.csv("/Users/mingyang/Desktop/SMU/DoingDS_Fall2020/MSDS6306-Case
 #summary(Breweries)
 #str(Breweries)
 #Above this line is for self analyzing can be deleted later
+# trim state column
+Breweries$State = trimws(Breweries$State)
 #Turn Breweries State column into a factor
 Breweries$State = as.factor(Breweries$State)
 ```
@@ -366,10 +371,10 @@ uscities = uscities%>% group_by(City) %>% filter(row_number()==1)
 # Getting all Ales Beer available
 allAles2 = completedData %>% filter(str_detect(completedData$Beer_Name,regex("Ale",ignore.case=TRUE)))
 dataWithMap = left_join(allAles2,uscities, by = "City")
-str(dataWithMap)
+#str(dataWithMap)
 #dataWithMap %>% filter((is.na(lng))|(is.na(lat))) %>% select(Brew_Name,City)
 dataWithMap2 = dataWithMap %>% select(Beer_Name,City,lat,lng,state_name)
-head(dataWithMap2,100)
+#head(dataWithMap2,100)
 dataWithMap3 = dataWithMap2 %>% group_by(City) %>% mutate(count = n())
 dataWithMap3 = dataWithMap3 %>% group_by(City)%>%filter(row_number()==1)%>%
   filter((!is.na(lng))&(!is.na(lat)))
@@ -383,24 +388,81 @@ p <-p + geom_point(data = dataWithMap3, aes(x = lng, y = lat, size=count,alpha=c
 ggplotly(p)
 ```
 
+### Average ABV Heatmap (by state)
 
+```{r}
+library(ggplot2)
+library(dplyr)
+library(mapproj)
+library(plyr)
 
+lookup = data.frame(abb = state.abb, State = state.name) #makes a data frame with State name and abbreviation. 
+#lookup
+colnames(completedData)[10] = "abb"
+completedData$abb = as.character(completedData$abb)
 
+Breweries2 = merge(completedData,lookup, by.x = "abb", by.y="abb", all.x=TRUE) # make one dataset with state names and abb
+#Breweries2
+Breweries2$ABV <- as.numeric(Breweries2$ABV)
+BreweriesMapData <- Breweries2 %>% select(ABV, State) %>% group_by(State)
+#BreweriesMapData
+BreweriesMapData <- aggregate(. ~ State, BreweriesMapData, mean)
 
+BreweriesMapData$region <- tolower(BreweriesMapData$State)
+BreweriesMapData = BreweriesMapData[-1]
+#BreweriesMapData
+states <- map_data("state")
+#states
+map.df <- full_join(states,BreweriesMapData, by="region", all.x=T)
+#map.df
+map.df <- map.df[order(map.df$order),]
+h <- ggplot(map.df, aes(x=long,y=lat,group=group))+
+  geom_polygon(aes(fill=ABV))+
+  geom_path()+ 
+  scale_fill_gradientn(colours=rev(heat.colors(5)),na.value="grey90")+ggtitle("Average ABV By State")+
+coord_map()
+ggplotly(h)
+```
 
+### ABV Density Map (by City)
 
+```{r}
+library(plyr)
+library(ggmap)
+library(usmap)
+library(rgdal)
+library(sf)
+library(maptools)
 
+states <- read.csv("/Users/mingyang/Desktop/SMU/DoingDS_Fall2020/MSDS6306-Case-Study1/uscities.csv",header = TRUE)
+states$region <- tolower(states$state_name)
 
-
-
-
-
-
-
-
-
-
-
+lookup = data.frame(abb = state.abb, State = state.name) #makes a data frame with State name and abbreviation. 
+#lookup
+completedData$abb = as.character(completedData$abb)
+Breweries2 = merge(completedData,lookup, by.x = "abb", by.y="abb", all.x=TRUE) # make one dataset with state names and abb
+#str(Breweries2)
+#Breweries2$ABV <- as.numeric(Breweries2$ABV)
+BreweriesMapData <- Breweries2 %>% select(ABV, State) %>% group_by(State)
+#head(BreweriesMapData)
+BreweriesMapData <- aggregate(. ~ State, BreweriesMapData, mean)
+BreweriesMapData$region <- tolower(BreweriesMapData$State)
+#states
+map.df <- left_join(states, BreweriesMapData, by="region")
+#map.df
+#colnames(map.df)
+map.df <- map.df[, c(8,7,1,2,3,4,5,6,9,10,11,12,13,14,15,16,17,18,19,20)]
+map.df <- usmap_transform(map.df)
+#map.df
+#map.df <- map.df[order(map.df$order),]
+plot_usmap() +
+  geom_point(data = map.df, aes(x = lng.1, y = lat.1, size = ABV),
+             color = "Dark Green", alpha = .01) +
+  labs(title = "Average ABV By City per State",
+       subtitle = "Source: USGS",
+       size = "ABV") +
+  theme(legend.position = "right")
+```
 
 
 
