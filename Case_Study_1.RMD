@@ -47,10 +47,12 @@ num_Breweries_by_state
 #As we can see the number of breweries per state is in the list below, to see this better we will use a plot to show results
 ggplot(data=num_Breweries_by_state)+
   geom_bar(mapping=aes(x=State,y=count,fill=State),stat="identity") +
+  coord_flip()+
   ggtitle("Breweries count by state")+xlab("State")+ylab("Count of Breweries")
 #To see this by descend of count
 ggplot(data=num_Breweries_by_state)+
   geom_bar(mapping=aes(x=reorder(State,-count),y=count,fill=State),stat="identity") +
+  coord_flip()+
   ggtitle("Breweries count by state")+xlab("State")+ylab("Count of Breweries")
 ```
 
@@ -97,20 +99,24 @@ median
 #First plot median of alcohol content using modified data
 median %>% ggplot()+
   geom_bar(mapping=aes(x=reorder(State,-median_ABV),y=median_ABV,fill=State),stat="identity") +
+  coord_flip()+
   ggtitle("Median Alcohol content by State on modified dataset")+xlab("State")+ylab("Alcohol Content Percentage")
 #Below is result of using complete data set with missing data to plot median of alcohol content
 Beers.with.Breweries %>% group_by(State) %>%
   summarize(median_ABV=median(ABV),median_IBU=median(IBU))%>% ggplot()+
   geom_bar(mapping=aes(x=reorder(State,-median_ABV),y=median_ABV,fill=State),stat="identity")+
+  coord_flip()+
   ggtitle("Median Alcohol content by State on non-Modified dataset")+xlab("State")+ylab("Alcohol Content Percentage")
 #Below is result of plotting median international bitterness unit for each state on modified data set
 median %>% ggplot()+
   geom_bar(mapping=aes(x=reorder(State,-median_IBU),y=median_IBU,fill=State),stat="identity") +
+  coord_flip()+
   ggtitle("Median International Bitterness Unit by State on modified dataset")+xlab("State")+ylab("International Bitterness Unit")
 #Below is result of using complete data set with missing data to plot median of alcohol content
 Beers.with.Breweries %>% group_by(State) %>%
   summarize(median_ABV=median(ABV),median_IBU=median(IBU))%>% ggplot()+
   geom_bar(mapping=aes(x=reorder(State,-median_IBU),y=median_IBU,fill=State),stat="identity") +
+  coord_flip()+
   ggtitle("Median International Bitterness Unit by State on non-modified dataset")+xlab("State")+ylab("International Bitterness Unit")
 
 ```
@@ -119,12 +125,19 @@ Beers.with.Breweries %>% group_by(State) %>%
 - As we can see below, Colorado 'CO' has the maximum alcoholic(ABV) beer, it is (0.128)
 - This above result remain unchanged with the original data set
 - As we can see, Oregon and Michigan have the most bitter beer
-- Only Oregon has the most bitter beer in the unchanged data set. It means the Michigan bee bitterness value was imputed
+- Only Oregon has the most bitter beer in the unchanged data set. It means the Michigan beer bitterness value was imputed
 ```{r}
 # Discover which state has the maximum alcoholic beer
 head(completedData %>%
   arrange(desc(ABV)) %>% 
   select(State,ABV,Beer_Name))
+
+# Boxplot
+completedData %>% ggplot(aes(x=ABV)) + 
+  geom_boxplot(fill="green",outlier.colour="red", outlier.shape=8,
+                outlier.size=4, width=0.1) +
+  ggtitle("Boxplot showing distribution of ABV values")+xlab("Alcohol by volume")
+
 # Discover with un-changed data set
 head(Beers.with.Breweries %>%
   arrange(desc(ABV)) %>% 
@@ -164,13 +177,17 @@ summary(Beers.with.Breweries)
 - **This relationship seem to persist when we compare to the unmodified data**
 ```{r}
 #first explore modified data
-completedData %>% select(ABV, IBU, State) %>%
-  ggplot(aes(x=ABV,y=IBU)) +
-  geom_point(position="jitter") +ggtitle("IBU vs. ABV -- modified data")
+completedData %>% 
+  ggplot(aes(x=ABV, y=IBU)) +
+  geom_point(size=2, shape=23, color = "dark green",position="jitter") +
+  geom_smooth(method=lm) +
+  ggtitle("IBU vs. ABV")+xlab("Alcohol by volume")+ylab("International Bitterness Unit")
 #next explore unmodified data
 Beers.with.Breweries %>% select(ABV, IBU, State) %>%
-  ggplot(aes(x=ABV,y=IBU)) +
-  geom_point(position="jitter") +ggtitle("IBU vs. ABV -- unmodified data")
+  ggplot(aes(x=ABV, y=IBU)) +
+  geom_point(size=2, shape=23, color = "dark green",position="jitter") +
+  geom_smooth(method=lm) +
+  ggtitle("IBU vs. ABV")+xlab("Alcohol by volume")+ylab("International Bitterness Unit")
   
 ```
 
@@ -361,7 +378,7 @@ p <- ggplot() +
   coord_quickmap()
 
 p <-p + geom_point(data = dataWithMap3, aes(x = lng, y = lat, size=count,alpha=count),color="blue")+
-  ggtitle("What cities produce many kinds of Ales") + xlab("Longitude")+ylab("Latitute")
+  ggtitle("Density of Ales Facilities by City") + xlab("Longitude")+ylab("Latitute")
 ggplotly(p)
 ```
 
