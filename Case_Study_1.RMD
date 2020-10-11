@@ -175,35 +175,35 @@ Beers.with.Breweries %>% select(ABV, IBU, State) %>%
 ```
 
 ### Budweiser would also like to investigate the difference with respect to IBU and ABV between IPAs (India Pale Ales) and other types of Ale (any beer with “Ale” in its name other than IPA).
-- There are total of 618 Beer name has Ale in it
-- 41 Beer name has India Pale Ales in it
+- There are total of 954 Beer name has Ale or IPA in it
+- 377 Beer name has India Pale Ales or IPA in it
 - 577 are other types of Ale
 - By using KNN model to try classifying India Pale Ales against other Ales
-- Initially used k=5 (five neighbors to compare): really great Accuracy rate 0.9355, however very low sensitivity rate with the model (correctly predicting India Pale Ale), great Specificity rate (correctly predicting other types of Ales)
-- Next we tried different random seed number and see if this is due to chance: by trying another randomn seed model, got accuracy rate to 0.9597, increased Sensitivity to 0.33, and Super great Specificity: 0.99 (99% chance of predicting other types of Ales)
-- Then we explored what is the best k value to give the most accuracy, after exploring, it is giving k>30, however, this reduced the Sensitivity (successfully predicting India Pale Ales) to almost minimal. It leads us to explore what k gives best Sensitivity rate(try to improve our model sensitivity rate)?
-- After running such test, it suggest a low k number provides better Sensitivity
-- In this scenario, I consider k=3 might be the best compromise to balance the model
-- By using k=3, seed=101, we got Accuracy rate=0.92, while Sensitivity is around 0.33(successfully predicting India Pale Ales), Specificity=0.95(Successfully predict other Ales) 
-- Getting an average result of one hundred random generations from KNN model with k=3, Average Accuracy = 0.93, Average Sensitivity = 0.24, Average Specificity = 0.98
-- **Conclusion: Even we have a great accuracy rate of predicting with our KNN model using IBU and ABV,we have a poor sensitivity rate to predict India Pale Ales correctly, this maybe due to the fact that the other Ales groups covers majority of the data set, and thus there is a high chance for any Ale to be categorized to other Ale group based on IBU and adjusted ABV alone.**
+- Initially try k=5 (five neighbors to compare):  Accuracy rate 0.79, sensitivity rate 0.65, Specificity rate 0.87
+- Then we explored what is the best k value to give the most accuracy, after exploring average of 500 random sample, k=9 is about the best accuracy rate given
+- Since Sensitivity is lowest among all, curious what is the best k for a good sensitivity rate?
+- By running such test, it suggest k>37 provides a better Sensitivity rate, and not sacrificing accuracy rate too much (So to balance our model, we choose k=45 and rerun the test)
+- In this scenario, we consider k=45 might be the best compromise to balance the model
+- Getting an average result of one hundred random generations from KNN model with k=45, Average Accuracy = 0.80, Average Sensitivity = 0.78, Average Specificity = 0.81
+- **Conclusion: By tuning the model between accuracy and sensitivity (specificity is already pretty good), we decided to use k=45 for our KNN model and got average rate of successfully predicting India Pale Ales of 0.78, Average rate of successfully predicting Other types of Ales at 0.81, and overall average accuracy rate at 0.80.**
 - Next try Naive Bayes Models to use probabilities to estimate different Ales based on IBU and ABV
-- After trying Naive Bayes Model, it can give an improved Sensitivity rate with the right random generator
-- By getting the average of one hundred random generations from NB model, Average Accuracy = 0.90, Average Sensitivity= 0.15, Average Specificity = 0.95
-- **Conclusion with NB model - not as good as KNN with k=3 **
+- After trying Naive Bayes Model with one random sample, Accuracy = 0.80, Sensitivity = 0.73, Specificity= 0.84
+- By getting the average of one hundred random generations from NB model, Average Accuracy = 0.78, Average Sensitivity= 0.68, Average Specificity = 0.85
+- **Conclusion with NB model - almost as good as KNN k=9 prediction model, but depending on what is more important to client, such as, is it more important to predict other ales accurately, predicting IPA accurately or overall accuracy is most important**
 ```{r}
 #In order to investigate the difference respect to IBU and ABV, first extract all name with Ales
 #getting all bear name with ale in it (ignore the case factor)
-all_ales = completedData %>% filter(str_detect(completedData$Beer_Name,regex("Ale",ignore.case=TRUE)))
+all_ales = completedData %>% filter(str_detect(completedData$Beer_Name,regex("Ale|IPA",ignore.case=TRUE)))
 india_pale_ales = all_ales %>% 
-  filter(str_detect(all_ales$Beer_Name,regex("India Pale Ale",ignore.case=TRUE)))
+  filter(str_detect(all_ales$Beer_Name,regex("India Pale Ale|IPA",ignore.case=TRUE)))
 other_ales = all_ales %>% 
-  filter(!str_detect(all_ales$Beer_Name,regex("India Pale Ale",ignore.case=TRUE)))
-# in order to effectively use KNN model, I decided to standardize percentage scale of ABV, so the effect of distance from ABV and IBU are roughly the same. I choose to time each ABV value by 1000 to accomplish this standarization
-all_ales$ABV = all_ales$ABV * 1000
+  filter(!str_detect(all_ales$Beer_Name,regex("India Pale Ale|IPA",ignore.case=TRUE)))
+# in order to effectively use KNN model, I decided to standardize percentage scale of ABV and IBU, so the effect of distance from ABV and IBU are roughly the same. I choose to use scale method to do so
+all_ales$ABV = scale(all_ales$ABV)
+all_ales$IBU = scale(all_ales$IBU)
 # Change other ales name to other ales in order to use KNN model to test whether we can use IBU and ABV to distinguish IPAs from others
 all_ales = all_ales %>% 
-  mutate(India.Pale.Ale.Or.Else = ifelse(str_detect(Beer_Name,regex("India Pale Ale",ignore.case=TRUE)),"India Pale Ale","Other Ale"))
+  mutate(India.Pale.Ale.Or.Else = ifelse(str_detect(Beer_Name,regex("India Pale Ale|IPA",ignore.case=TRUE)),"India Pale Ale","Other Ale"))
 #all_ales$India.Pale.Ale.Or.Else
 # Start KNN test to see how good it is to use ABV and IBU to distinguish the Ales
 library(class)
@@ -244,18 +244,6 @@ MeanAcc = colMeans(masterAcc)
 plot(seq(1,numks,1),MeanAcc, type = "l",main="mean Accuracy vs. different K (number of neighbor used to predict)",
      ylab="Mean Accuracy",xlab="k used")
 
-#Try k=30 after finding it might give the most accuracy
-#Keep my result reproducible initially tried set.seed(101)
-set.seed(101)
-splitPerc = 0.8
-trainIndices = sample(1:dim(all_ales)[1],round(splitPerc * dim(all_ales)[1]))
-train = all_ales[trainIndices,]
-test = all_ales[-trainIndices,]
-# try k=5
-classifications = knn(train[,3:4],test[,3:4],train$India.Pale.Ale.Or.Else, prob = TRUE, k = 30)
-table(classifications,test$India.Pale.Ale.Or.Else)
-cm = confusionMatrix(table(classifications,test$India.Pale.Ale.Or.Else))
-cm
 
 # explore best possible K value for sensitivity
 set.seed(101)
@@ -280,19 +268,8 @@ MeanSen = colMeans(masterSen)
 plot(seq(1,numks,1),MeanSen, type = "l",main="mean Sensitivity vs. different K (number of neighbor used to predict)",
      ylab="Mean Sensitivity",xlab="k used")
 
-#Try k=3 after finding it might give the most Sensitivity
-#Keep my result reproducible initially tried set.seed(101)
-set.seed(101)
-splitPerc = 0.8
-trainIndices = sample(1:dim(all_ales)[1],round(splitPerc * dim(all_ales)[1]))
-train = all_ales[trainIndices,]
-test = all_ales[-trainIndices,]
-# try k=5
-classifications = knn(train[,3:4],test[,3:4],train$India.Pale.Ale.Or.Else, prob = TRUE, k = 3)
-table(classifications,test$India.Pale.Ale.Or.Else)
-cm = confusionMatrix(table(classifications,test$India.Pale.Ale.Or.Else))
-cm
-#Get an average percentage of Accuracy, Sensitivity, and Specificity of KNN model k=3
+
+#Get an average percentage of Accuracy, Sensitivity, and Specificity of KNN model k=45
 set.seed(101)
 iterations = 100
 numks = 50
@@ -304,7 +281,7 @@ for(j in 1:iterations)
 trainIndices = sample(1:dim(all_ales)[1],round(splitPerc * dim(all_ales)[1]))
 train = all_ales[trainIndices,]
 test = all_ales[-trainIndices,]
-classifications = knn(train[,3:4],test[,3:4],train$India.Pale.Ale.Or.Else, prob = TRUE, k = 3)
+classifications = knn(train[,3:4],test[,3:4],train$India.Pale.Ale.Or.Else, prob = TRUE, k = 45)
 CM = confusionMatrix(table(classifications,test$India.Pale.Ale.Or.Else))
 masterAcc[j,1]=CM$overall[1]
 masterSen[j,1]=CM$byClass[1]
@@ -330,7 +307,7 @@ CM
 
 # Try getting average of Accuracy, Sensitivity and Specificity rate using NB model from 100 random generators
 set.seed(101)
-splitPerc = .7
+splitPerc = .8
 iterations = 100
 masterAcc = matrix(nrow = iterations, ncol = 1)
 masterSen = matrix(nrow = iterations, ncol = 1)
