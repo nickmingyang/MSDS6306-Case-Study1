@@ -353,7 +353,11 @@ MeanSpec
 
 ### Further exploration -- Free Style 
 - Explore Types of Ales produced in each city (Which cities contribute to most varieties of Ales?)
+- Explore all bear counts by city
 - Explore average ABV content produced by state (Which states produces higher average ABV content, which states lower?)
+- **Note: Since map_data library don't have Hawaii and Alaska map data to plot, that's why it is not showing on the map, even we have a few breweries in those states.**
+
+### Density of Ales count by city
 ```{r}
 #import map library
 library(maps)
@@ -362,6 +366,8 @@ library(plotly)
 uscities <- read.csv("/Users/mingyang/Desktop/SMU/DoingDS_Fall2020/MSDS6306-Case-Study1/uscities.csv",header = TRUE)
 uscities = uscities%>%rename(City = city) 
 uscities = uscities%>% group_by(City) %>% filter(row_number()==1)
+#Loading in State Coordinates
+state_coord <- read.csv("/Users/mingyang/Desktop/SMU/DoingDS_Fall2020/MSDS6306-Case-Study1/states_coord.csv",header = TRUE)
 # Getting all Ales Beer available
 allAles2 = completedData %>% filter(str_detect(completedData$Beer_Name,regex("Ale",ignore.case=TRUE)))
 dataWithMap = left_join(allAles2,uscities, by = "City")
@@ -378,8 +384,32 @@ p <- ggplot() +
   coord_quickmap()
 
 p <-p + geom_point(data = dataWithMap3, aes(x = lng, y = lat, size=count,alpha=count),color="blue")+
-  ggtitle("Density of Ales Facilities by City") + xlab("Longitude")+ylab("Latitute")
+  geom_text(data = state_coord, aes(x = longitude, y = latitude, label = state))+
+  ggtitle("Density of Ales count by City") + xlab("Longitude")+ylab("Latitute")
 ggplotly(p)
+```
+
+### All Beer types count by City
+```{r}
+# Getting all Beer available
+dataWithMap = left_join(completedData,uscities, by = "City")
+#str(dataWithMap)
+#dataWithMap %>% filter((is.na(lng))|(is.na(lat))) %>% select(Brew_Name,City)
+dataWithMap2 = dataWithMap %>% select(Beer_Name,City,lat,lng,state_name)
+#head(dataWithMap2,100)
+dataWithMap3 = dataWithMap2 %>% group_by(City) %>% mutate(count = n())
+dataWithMap3 = dataWithMap3 %>% group_by(City)%>%filter(row_number()==1)%>%
+  filter((!is.na(lng))&(!is.na(lat)))
+states <- map_data("state")
+p <- ggplot() + 
+  geom_polygon(data = states, aes(x = long, y = lat, group = group), fill = "yellow", color = "black") + 
+  coord_quickmap()
+
+p <-p + geom_point(data = dataWithMap3, aes(x = lng, y = lat, size=count,alpha=count),color="blue")+
+  geom_text(data = state_coord, aes(x = longitude, y = latitude, label = state))+
+  ggtitle("Density of all Beer count by City") + xlab("Longitude")+ylab("Latitute")
+ggplotly(p)
+
 ```
 
 ### Average ABV Heatmap (by state)
@@ -410,53 +440,16 @@ states <- map_data("state")
 map.df <- full_join(states,BreweriesMapData, by="region", all.x=T)
 #map.df
 map.df <- map.df[order(map.df$order),]
-h <- ggplot(map.df, aes(x=long,y=lat,group=group))+
+h <- ggplot(map.df, aes(x=long,y=lat))+
   geom_polygon(aes(fill=ABV))+
-  geom_path()+ 
+  geom_path(aes(group=group))+
+  geom_text(data = state_coord, aes(x = longitude, y = latitude, label = state))+
   scale_fill_gradientn(colours=rev(heat.colors(5)),na.value="grey90")+ggtitle("Average ABV By State")+
 coord_map()
 ggplotly(h)
 ```
 
-### ABV Density Map (by City)
 
-```{r}
-library(plyr)
-library(ggmap)
-library(usmap)
-library(rgdal)
-library(sf)
-library(maptools)
-
-states <- read.csv("/Users/mingyang/Desktop/SMU/DoingDS_Fall2020/MSDS6306-Case-Study1/uscities.csv",header = TRUE)
-states$region <- tolower(states$state_name)
-
-lookup = data.frame(abb = state.abb, State = state.name) #makes a data frame with State name and abbreviation. 
-#lookup
-completedData$abb = as.character(completedData$abb)
-Breweries2 = merge(completedData,lookup, by.x = "abb", by.y="abb", all.x=TRUE) # make one dataset with state names and abb
-#str(Breweries2)
-#Breweries2$ABV <- as.numeric(Breweries2$ABV)
-BreweriesMapData <- Breweries2 %>% select(ABV, State) %>% group_by(State)
-#head(BreweriesMapData)
-BreweriesMapData <- aggregate(. ~ State, BreweriesMapData, mean)
-BreweriesMapData$region <- tolower(BreweriesMapData$State)
-#states
-map.df <- left_join(states, BreweriesMapData, by="region")
-#map.df
-#colnames(map.df)
-map.df <- map.df[, c(8,7,1,2,3,4,5,6,9,10,11,12,13,14,15,16,17,18,19,20)]
-map.df <- usmap_transform(map.df)
-#map.df
-#map.df <- map.df[order(map.df$order),]
-plot_usmap() +
-  geom_point(data = map.df, aes(x = lng.1, y = lat.1, size = ABV),
-             color = "Dark Green", alpha = .01) +
-  labs(title = "Density of Average ABV per City",
-       subtitle = "Source: USGS",
-       size = "ABV") +
-  theme(legend.position = "right")
-```
 
 
 
