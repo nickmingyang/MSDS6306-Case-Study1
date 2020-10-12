@@ -49,7 +49,7 @@ ggplot(data=num_Breweries_by_state)+
   geom_bar(mapping=aes(x=State,y=count,fill=State),stat="identity") +
   coord_flip()+
   ggtitle("Breweries count by state")+xlab("State")+ylab("Count of Breweries")
-#To see this by descend of count
+#To see this in order
 ggplot(data=num_Breweries_by_state)+
   geom_bar(mapping=aes(x=reorder(State,-count),y=count,fill=State),stat="identity") +
   coord_flip()+
