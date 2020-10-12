@@ -452,7 +452,7 @@ map.df <- usmap_transform(map.df)
 plot_usmap() +
   geom_point(data = map.df, aes(x = lng.1, y = lat.1, size = ABV),
              color = "Dark Green", alpha = .01) +
-  labs(title = "Average ABV By City per State",
+  labs(title = "Density of Average ABV per City",
        subtitle = "Source: USGS",
        size = "ABV") +
   theme(legend.position = "right")
