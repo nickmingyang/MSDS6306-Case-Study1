@@ -69,7 +69,7 @@ head(Beers.with.Breweries,6)
 ### Address the missing values in each column
 - There are 62 missing values on ABV column, and there are 1005 missing values on IBU column
 - Since 1005/2410 is too big of a percentage of missing value for column IBU, I decided to use Predictive mean matching method(widely used statistical imputation method for missing values, first proposed by Donald B. Rubin in 1986 and R. J. A. Little in 1988) to fill the missing data.
-- After generating and filling in the missing data, through density plot below, we can see the generated filled in value matches the original density plot. Thus minimize any bias from the researcher of arbitrarily filling in value or overeasily using the overall mean for all missing value
+- After generating and filling in the missing data, through density plot below, we can see the generated filled in value matches the original density plot. Thus minimize any bias from the researcher of arbitrarily filling in value or simply using the overall mean for all missing value, which can cause trouble in our further analysis of data
 ```{r}
 summary(Beers.with.Breweries)
 library(mice) #Load mice library to analyze the pattern of missing data
@@ -89,7 +89,7 @@ densityplot(tempData)
 ### Compute the median alcohol content and international bitterness unit for each state. Plot a bar chart to compare
 - First plotted Median alcohol content by state, one with modified data set, and the other one with non-modified data set
 - Then plotted Median international bitterness unit for each state, both on the modified data set and non-modified
-- We can see between the modified data and non-modified data provides very different answers. If possible, going back to try to complete the missing data will make the graphics more accurate. But this is a random estimate of the actual value
+- We can see between the modified data and non-modified data provides different answers. This is due to the imputation of data.
 ```{r}
 #Compute and display Median of ABV and IBU by state:
 median = completedData %>% group_by(State) %>%
@@ -132,11 +132,6 @@ head(completedData %>%
   arrange(desc(ABV)) %>% 
   select(State,ABV,Beer_Name))
 
-# Boxplot
-completedData %>% ggplot(aes(x=ABV)) + 
-  geom_boxplot(fill="green",outlier.colour="red", outlier.shape=8,
-                outlier.size=4, width=0.1) +
-  ggtitle("Boxplot showing distribution of ABV values")+xlab("Alcohol by volume")
 
 # Discover with un-changed data set
 head(Beers.with.Breweries %>%
@@ -163,18 +158,25 @@ head(Beers.with.Breweries %>%
 - Mean of ABV: 0.05975 (Average of the entire group, CEO and CFO might be interested)
 - Third Quartile ABV: 0.067
 - Maximum ABV: 0.128 (maximum value of the group, CEO and CFO might be interested)
-- **Comparing the adjusted Data and Unadjusted data, Statistics doesn't change much at all since it is imputed by Predictive mean matching method**
+- **Comparing the imputed Data and original data, Statistics doesn't change much at all since it is imputed by Predictive mean matching method, boxplot further shows the distribution of ABV**
 
 ```{r}
 # Summary of adjusted Data
 summary(completedData)
 # Summary of unadjusted Data
 summary(Beers.with.Breweries)
+# Boxplot
+completedData %>% ggplot(aes(x=ABV)) + 
+  geom_boxplot(fill="green",outlier.colour="red", outlier.shape=8,
+                outlier.size=4, width=0.1) +
+  ggtitle("Boxplot showing distribution of ABV values")+xlab("Alcohol by volume")
 ```
 ### Is there an apparent relationship between the bitterness of the beer and its alcoholic content?
 - **We can see from the scatter plot, there seem to be some sort of relationship between the two**
 - As ABV value increases, IBU seem to also increase
-- **This relationship seem to persist when we compare to the unmodified data**
+- However, this relationship is not super strong, maybe because, when we want to balance bitter flavor beer, adding suger will also increase ABV value
+- What is important for the clients? (Can lead to more research in this category...)
+- **This relationship seem to persist when we compare imputed data to the original data**
 ```{r}
 #first explore modified data
 completedData %>% 
@@ -358,6 +360,8 @@ MeanSpec
 - **Note: Since map_data library don't have Hawaii and Alaska map data to plot, that's why it is not showing on the map, even we have a few breweries in those states.**
 
 ### Density of Ales count by city
+- This gives us overview of where there is more types of Ales produced than other areas
+- Gives us leads to dig deeper into areas and find out why? Cost(Need sales data)? Resources(Need agriculture data)? Popularity(Need more research)?  
 ```{r}
 #import map library
 library(maps)
@@ -390,6 +394,9 @@ ggplotly(p)
 ```
 
 ### All Beer types count by City
+- This gives us overview of where there is more types of beer produced than other areas
+- Similar as above, it gives us leads to dig deeper into areas and find out why? Cost(Need sales data)? Resources(Need agriculture data)? Popularity(Need more research)?
+- In presentation, we decided to switch the order between this plot and Ales plot
 ```{r}
 # Getting all Beer available
 dataWithMap = left_join(completedData,uscities, by = "City")
@@ -413,6 +420,9 @@ ggplotly(p)
 ```
 
 ### Average ABV Heatmap (by state)
+- This gives us a high level overview (C level executive) for average ABV content
+- We can look into the state we're interested in and find more details on what causes a higher average or lower
+- Combines with the beer count density, and average ABV of each state, we can draw more conclusions on whether a state has more diversities in beer production or else
 
 ```{r}
 library(ggplot2)
