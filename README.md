@@ -10,5 +10,5 @@
 #### PPTX: This is our presentation deck, to summarize our findings to present to CEO and CFO of Budweiser
 #### In order to successfully run the RMD file, you need to download corresponding libraries that are used in the RMD file
 #### This project can be found under github link: https://github.com/nickmingyang/MSDS6306-Case-Study1
-#### YouTube Link for Nick YU: 
+#### YouTube Link for Nick YU: https://www.youtube.com/watch?v=kRLRgAZHtS4
 #### YouTube Link for Yvan Sojdehei:
