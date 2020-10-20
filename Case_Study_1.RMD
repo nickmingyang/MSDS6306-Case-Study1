@@ -171,6 +171,7 @@ completedData %>% ggplot(aes(x=ABV)) +
                 outlier.size=4, width=0.1) +
   ggtitle("Boxplot showing distribution of ABV values")+xlab("Alcohol by volume")
 ```
+
 ### Is there an apparent relationship between the bitterness of the beer and its alcoholic content?
 - **We can see from the scatter plot, there seem to be some sort of relationship between the two**
 - As ABV value increases, IBU seem to also increase
