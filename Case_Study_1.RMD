@@ -460,6 +460,12 @@ coord_map()
 ggplotly(h)
 ```
 
+### Conclusion:
+
+**We received datasets that contain beers and breweries.We are trying to discover any relationship between Alcohol by volume(ABV) and International Bitterness(IBU). Scatter plot shows a positive but weak linear relationship between ABV and IBU. We used such relationship between ABV and IBU to classify types of Ales into Indian Pale Ale or other types of Ales. The accuracy rate of our KNN model is pretty good at 80%, we can correctly predicting Indian Pale Ales at 78%, and correctly predicting other types of Ales at 81%. We obtain similar results from Naive Bayes model, except correctly predicting Indian Pale Ales at 68%. However, depending on what the customer is looking for, Naive Bayes model can be more efficient.**
+
+**We obtained density plots of all beers produced at facilities near cities. We were then able to go deeper into the dataset and show facilities of any kind of beer, such as Ales. This is a great asset management tool, and gives us overview of which kind of beer are more prevalent facilities across the country. It gives us leads to dig deeper into areas and find out why? Cost(Need sales data)? Resources(Need agriculture data)? Popularity(Need more research)?** 
+
 
 
 
