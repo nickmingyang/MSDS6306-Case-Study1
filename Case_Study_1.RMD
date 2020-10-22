@@ -198,6 +198,7 @@ Beers.with.Breweries %>% select(ABV, IBU, State) %>%
 - There are total of 954 Beer name has Ale or IPA in it
 - 377 Beer name has India Pale Ales or IPA in it
 - 577 are other types of Ale
+- First generated scatter plot on **scaled** data, to do an initial visual inspection to make sure KNN is appropriate to use to classify IPA and other Ales
 - By using KNN model to try classifying India Pale Ales against other Ales
 - Initially try k=5 (five neighbors to compare):  Accuracy rate 0.79, sensitivity rate 0.65, Specificity rate 0.87
 - Then we explored what is the best k value to give the most accuracy, after exploring average of 500 random sample, k=9 is about the best accuracy rate given
@@ -225,6 +226,13 @@ all_ales$IBU = scale(all_ales$IBU)
 all_ales = all_ales %>% 
   mutate(India.Pale.Ale.Or.Else = ifelse(str_detect(Beer_Name,regex("India Pale Ale|IPA",ignore.case=TRUE)),"India Pale Ale","Other Ale"))
 #all_ales$India.Pale.Ale.Or.Else
+#Plot scatter plot on scaled data before running with KNN
+all_ales %>%
+  ggplot(aes(x=ABV, y=IBU, fill=India.Pale.Ale.Or.Else)) +
+  geom_point(size=2, shape=23) +
+  geom_smooth(method=lm) +
+  ggtitle("Plot scaled alcohol content and bitterness (IPA and others)")+xlab("Alcohol by volume")+ylab("International Bitterness Unit")
+
 # Start KNN test to see how good it is to use ABV and IBU to distinguish the Ales
 library(class)
 library(caret)
