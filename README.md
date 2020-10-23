@@ -11,7 +11,7 @@
 #### In order to successfully run the RMD file, you need to download corresponding libraries that are used in the RMD file
 #### This project can be found under github link: https://github.com/nickmingyang/MSDS6306-Case-Study1
 #### YouTube Presentation by Nick YU: https://www.youtube.com/watch?v=kRLRgAZHtS4
-#### YouTube Presentation by Yvan Sojdehei:
+#### YouTube Presentation by Yvan Sojdehei: https://youtu.be/ktNJocfN7bU
 
 ### Conclusion:
 
