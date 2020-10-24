@@ -12,6 +12,7 @@
 #### This project can be found under github link: https://github.com/nickmingyang/MSDS6306-Case-Study1
 #### YouTube Presentation by Nick YU: https://www.youtube.com/watch?v=kRLRgAZHtS4
 #### YouTube Presentation by Yvan Sojdehei: https://youtu.be/ktNJocfN7bU
+#### YouTube Presentation by John Olanipekun:https://www.youtube.com/watch?v=gfhTaR_Ttek
 
 ### Conclusion:
 
